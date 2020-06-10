@@ -23,8 +23,8 @@
 * Lambda function - entry point
 * [Event source mapping](#invoking) - what triggers it
 * Downstream resources - other services the function needs
-* [Log streams](#logging-&amp;-monitoring) - within CloudWatch. Different defaults between languages.
-* AWS **SAM** - Serverless Application Model (used to define the serverless architecture)
+* [Log streams](#logging-and-monitoring) - within CloudWatch. Different defaults between languages.
+* AWS [SAM](../SAM/README.md) - Serverless Application Model (used to define the serverless architecture)
 
 # Defining a function
 
@@ -76,7 +76,7 @@ Scaling happens automatically, but the maximum concurrent executions is *depende
   * Async failures - tries 2x then sends to [dead letter queue](#defining-a-function) if fails again (if configured)
   * Stream failures - retries until data expires (service-dependent) and will block and not read new records until retry succeeds.
 
-# Logging & Monitoring
+# Logging and Monitoring
 
 * **Lambda** automatically monitors and logs metrics (e.g. like invocation count, invocation duration, errors) in **CloudWatch**
 * Additional logs can be included using language's logging/print statements (e.g. `console.log()`) and are then pushed to _Log Groups_ in **CloudWatch**
@@ -86,7 +86,7 @@ Scaling happens automatically, but the maximum concurrent executions is *depende
   * Include **X-Ray** SDK in your code
   * Use 16Mb/3% of the RAM allocated for your function
 
-# CloudWatch & Lambda
+# Lambda with CloudWatch
 
 You can setup _Alarms_ in **CloudWatch** to be notified of specific things (e.g. number of errors occurring in time period). Alarm can then publish to **SNS** topic, for example.
 
@@ -95,7 +95,7 @@ You can also have **CloudWatch** trigger a **Lambda** function (or other things)
 * Or you can configure them in **CloudWatch** directly (in _Events_, configuring a source and then setting your function as the target).
   * The event _source_ can be either an event pattern or on a schedule (fixed period or cron).
 
-# CLI & Lambda
+# Lambda CLI
 
 * [Lambda CLI reference](https://docs.aws.amazon.com/cli/latest/reference/lambda/index.html)
 
@@ -160,6 +160,44 @@ aws lambda invoke help
 
 # Running Lambda functions locally (using SAM)
 
-> _"SAM CLI allows faster, iterative development of your Lambda function code"_
+> __"SAM CLI allows faster, iterative development of your Lambda function code"__
 
 See [SAM notes](../SAM/README.md)
+
+# Versioning and aliases
+
+By default, there's just one version of a function - `$LATEST`, e.g. `MyFunction:$LATEST` (actually, this is an alias - see below)
+
+You can explicitly create a version (readonly) from `$LATEST` using the console or CLI, e.g. `MyFunction:1`
+
+**Each version has a unique ARN**.
+
+Note: It is **best practice** NOT to set event sources on function versions directly and __instead use aliases__... Although you can set these up, __they are not copied__ when new versions are published, so event sources will not carry forward.
+
+An **alias** is a named pointer to a specific version, which you can move. You can even perform **A/B testing** by splitting traffic between two versions!
+
+An alias also gets a unique ARN and ends with something like `MyFunction:PROD`
+
+```
+aws lambda publish-version --function-name MyFunction
+
+aws lambda list-versions-by-function --function-name MyFunction
+
+aws lambda create-alias --function-name MyFunction    \
+  --description ...                                   \
+  --function-version 1                                \
+  --name PROD
+```
+
+# Lambda with CloudFormation
+
+AWS infrastructure-as-code.
+
+[Lambda resource type reference](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/AWS_Lambda.html)
+
+**Lambda**-specific **CloudFormation** Resources:
+* `AWS::Lambda::EventSourceMapping` - Create/specify **Kinesis**/**DynamoDB** stream to use as source for a function.
+* `AWS::Lambda::Alias` - Creates an [alias](#versioning-and-aliases) to use
+* `AWS::Lambda::Function` - Create the function
+* `AWS::Lambda::Permission` - Grant another service access to invoke a function
+* `AWS::Lambda::Version` - Publish a version (`$LATEST` is copied to this version)
