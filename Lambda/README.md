@@ -1,7 +1,22 @@
 # Overview
 
-* Function-as-a-Service, event-sourced/event-driven architecture
-* Not suitable for every project. Good for: start-ups where don't want to spend time on Ops; light use sites where costs may be lower (it's pay-per-use). But not so good if you want to control resource usages or if you've got a large/slow site where costs can spiral.
+* Backend-as-a-Service (BaaS) is where common backend functionality (auth, database, api gateway) are in the cloud.
+* **Lambda** is function-as-a-Service (FaaS), which goes further than BaaS. Application only lives while executing and is triggered.
+  * Event-sourced/event-driven architecture.
+  * Applcation is ephemeral. Runs on a seemingly ethereal phantom infrastructure.
+* Benefits
+  * Less infrastructure to manage
+  * Built-in scaling
+  * Low start-up costs and reduced operational costs
+  * Simplified deployments
+  * Cheaper for burst-y traffic
+* Drawbacks
+  * Must keep FaaS apps 'warmed up'. Will be fully stopped if left idle.
+  * Other approaches (e.g. AWS ECS or EC2) may be cheaper for large, heavily-used applications.
+  * Easy to become vendor-locked
+  * Multi-tenancy concerns (data security/resource segmentation)
+  * Difficult to optimise infrastructure
+  * Can be harder to monitor (and may cost money to perform monitoring checks)
 
 # Useful links
 
@@ -17,6 +32,14 @@
 * Dashboards & functions are **per-region**
 * Always **tag** your AWS resources so you can find/filter/group them
 * If something isn't working as you expect, **check the execution permissions**
+
+# Example use cases
+
+* Automating AWS tasks, for example detecting a non-permitted change to a security group and automatically rolling that change back and sending an alert
+   * **EC2** change --> **CloudTrail** events --> **CloudWatch** rule --> **Lambda** --> **SNS** and **EC2** revoke
+* __Canary__ code deployments, by splitting executions between two function versions on an [alias](#Versioning-and-aliases). Though note that **API Gateway** may be better suited.
+*  Automatically deploying a Docker container published to **AWS ECR** in **AWS ECS**
+   * **ECR** --> **CloudTrail** events --> **CloudWatch** rule --> **Lambda** --> **ECS**
 
 # Lambda building blocks
 
