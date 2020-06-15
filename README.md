@@ -1,9 +1,13 @@
 # Notes
 
-* [CloudWatch](CloudWatch/README.md)
+* [CloudWatch](CloudWatch.md)
 * [CLI](CLI.md)
-* [Lambda](Lambda/README.md)
-* [SAM](SAM/README.md)
+* [Cognito](Cognito.md)
+* [Lambda](Lambda.md)
+* [Lex](Lex.md)
+* [SAM - Serverless Application Model](SAM.md)
+* [SES - Simple Email Service](SES.md)
+* [SNS - Simple Notification Service](SNS.md)
 
 # Useful links
 

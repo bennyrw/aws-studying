@@ -1,4 +1,4 @@
-# Overview
+# Lambda - Function-as-a-Service
 
 * Backend-as-a-Service (BaaS) is where common backend functionality (auth, database, api gateway) are in the cloud.
 * **Lambda** is function-as-a-Service (FaaS), which goes further than BaaS. Application only lives while executing and is triggered.
@@ -47,7 +47,7 @@
 * [Event source mapping](#invoking) - what triggers it
 * Downstream resources - other services the function needs
 * [Log streams](#logging-and-monitoring) - within CloudWatch. Different defaults between languages.
-* AWS [SAM](../SAM/README.md) - Serverless Application Model (used to define the serverless architecture)
+* AWS [SAM](./SAM.md) - Serverless Application Model (used to define the serverless architecture)
 
 # Defining a function
 
@@ -185,7 +185,7 @@ aws lambda invoke help
 
 > __"SAM CLI allows faster, iterative development of your Lambda function code"__
 
-See [SAM notes](../SAM/README.md)
+See [SAM notes](./SAM.md)
 
 # Versioning and aliases
 

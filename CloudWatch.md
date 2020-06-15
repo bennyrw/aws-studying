@@ -1,3 +1,5 @@
+# CloudWatch - Monitoring logs and triggering events in real time
+
 # CLI
 
 For example, this can be used to monitor logs in real-time, create alarms, archive log data, etc.
