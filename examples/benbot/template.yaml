@@ -1,0 +1,107 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  benbot
+
+  Serverless Slack alerting chatbot built with AWS Lex.
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 3
+
+Parameters:
+  TargetEmailParameter:
+    Type: String
+    Description: Enter the email to send alerts to
+  TargetPhoneNumberParameter:
+    Type: String
+    Description: Enter the phone number to send alerts to (+44....)
+
+Resources:
+  ValidateFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: lambda/
+      Handler: app.validateLambdaHandler
+      # default Role is ok for this function
+      Runtime: nodejs12.x
+      MemorySize: 256
+      Events:
+        Validate:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /validate
+            Method: post
+  FulfilmentFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: lambda/
+      Handler: app.fulfilmentLambdaHandler
+      Runtime: nodejs12.x
+      # need a role that allows access to SES and SNS
+      Role: !GetAtt FulfilmentFunctionRole.Arn
+      MemorySize: 256
+      Environment:
+        Variables:
+          targetEmail:
+            Ref: TargetEmailParameter
+          targetPhoneNumber:
+            Ref: TargetPhoneNumberParameter
+      Events:
+        Validate:
+          Type: Api
+          Properties:
+            Path: /fulfilment
+            Method: post
+  FulfilmentFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: root
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  # from AWSLambdaBasicExecutionRole (default)
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  # from AmazonSESFullAccess
+                  - ses:*
+                  # from AmazonSNSFullAccess
+                  - sns:*
+                Resource: "*"
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  ValidateApi:
+    Description: "API Gateway endpoint URL for Prod stage for validate function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/validate/"
+  ValidateFunction:
+    Description: "Validate Function ARN"
+    Value: !GetAtt ValidateFunction.Arn
+  ValidateFunctionIamRole:
+    Description: "Implicit IAM Role created for validate function"
+    Value: !GetAtt ValidateFunctionRole.Arn
+  FulfilmentApi:
+    Description: "API Gateway endpoint URL for Prod stage for fulfilment function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/fulfilment/"
+  FulfilmentFunction:
+    Description: "Fulfilment Function ARN"
+    Value: !GetAtt FulfilmentFunction.Arn
+  FulfilmentFunctionIamRole:
+    Description: "Implicit IAM Role created for fulfilment function"
+    Value: !GetAtt FulfilmentFunctionRole.Arn
