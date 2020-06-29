@@ -458,3 +458,28 @@ resource "aws_elb" "wp_elb" {
     Name = "wp_${var.domain_name}-elb"
   }
 }
+
+
+# ------ 'Golden AMI' - created from the dev server and then used as AMI for the auto-scaling group ------
+
+resource "random_id" "golden_ami" {
+  byte_length = 2
+}
+
+resource "aws_ami_from_instance" "wp_golden" {
+  name = "wp_ami-${random_id.golden_ami.b64}" # base64
+  source_instance_id = "${aws_instance.wp_dev.id}"
+
+  # create userdata file that will be run on each instance in the auto-scaling group
+  # this will cause each instance to pull code from the bucket every 5 minutes, keeping them up to date
+  provisioner "local-exec" {
+    command = <<EOD
+cat <<EOF > userdata
+#!/bin/bash
+/usr/bin/aws s3 sync s3://${aws_s3_bucket.code.bucket} /var/www/html/
+/bin/touch /var/spool/cron/root
+sudo /bin/echo '*/5 * * * * aws s3 sync s3://${aws_s3_bucket.code.bucket} /var/www/html' >> /var/spool/cron/root
+EOF
+EOD
+  }
+}

@@ -28,6 +28,8 @@ terraform apply
 
 # Main files
 
+![How files are used](files.png)
+
 * `main.tf` - Resource defs
 * `variables.tf` - Variable declarations
 * `terraform.tfvars` - Variable assignments
