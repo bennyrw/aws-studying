@@ -32,4 +32,6 @@ terraform apply
 * `variables.tf` - Variable declarations
 * `terraform.tfvars` - Variable assignments
 
+`terraform fmt` command reformats the script nicely.
+
 Included `terraform.tfvars` but would include in `.gitignore` normally as it could include sensitive info.
