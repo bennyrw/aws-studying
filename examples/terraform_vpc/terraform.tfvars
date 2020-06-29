@@ -11,3 +11,4 @@ cidrs = {
   rds3 = "10.0.7.0/24"
 }
 localip = "34.219.93.248/32"
+domain_name = "example-domain"

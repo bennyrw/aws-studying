@@ -298,3 +298,51 @@ resource "aws_security_group" "wp_rds_sg" {
     ]
   }
 }
+
+# -- VPC endpoint for S3 and the bucket itself --
+
+resource "aws_vpc_endpoint" "wp_private-s3_endpoint" {
+  vpc_id = "${aws_vpc.wp_vpc.id}"
+  # access S3 from a specific region
+  service_name = "com.amazonaws.${var.aws_region}.s3"
+
+  # attach to route table so goes over the endpoint rather than over the internet
+  route_table_ids = [
+    "${aws_vpc.wp_vpc.main_route_table_id}",
+    "${aws_route_table.wp_public_rt.id}"
+  ]
+
+  policy = <<POLICY
+{
+  "Statement": [
+    {
+      "Action": "*",
+      "Effect": "Allow",
+      "Resource": "*",
+      "Principal": "*"
+    }
+  ]
+}
+POLICY
+}
+
+# first generate a random ID as bucket has to be unique across entire AWS
+# https://registry.terraform.io/providers/hashicorp/random/latest/docs/resources/id
+# (when first adding this, need to run `terraform init` to download the plugin)
+resource "random_id" "wp_code_bucket" {
+  byte_length = 2
+}
+
+resource "aws_s3_bucket" "code" {
+  bucket = "${var.domain_name}-${random_id.wp_code_bucket.dec}"
+
+  # public shouldn't be public - our endpoints and policy above control access
+  acl = "private"
+
+  # override destroy protection (you might not want this!)
+  force_destroy = true
+
+  tags = {
+    Name = "code bucket"
+  }
+}
