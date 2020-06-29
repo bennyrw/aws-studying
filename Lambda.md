@@ -4,19 +4,24 @@
 * **Lambda** is function-as-a-Service (FaaS), which goes further than BaaS. Application only lives while executing and is triggered.
   * Event-sourced/event-driven architecture.
   * Applcation is ephemeral. Runs on a seemingly ethereal phantom infrastructure.
-* Benefits
+* Benefits of serverless
+  * Less to worry about and leverage experience of others (e.g. provider's security team)
   * Less infrastructure to manage
   * Built-in scaling
   * Low start-up costs and reduced operational costs
   * Simplified deployments
   * Cheaper for burst-y traffic
-* Drawbacks
+  * Faster infrastructure issue resolution (__Can we fix infrastructure problems better than cloud provider's experts?__)
+  * Less code - avoiding writing entire chunks of application, which are offloaded to service provider
+* Drawbacks of serverless
   * Must keep FaaS apps 'warmed up'. Will be fully stopped if left idle.
   * Other approaches (e.g. AWS ECS or EC2) may be cheaper for large, heavily-used applications.
   * Easy to become vendor-locked
   * Multi-tenancy concerns (data security/resource segmentation)
-  * Difficult to optimise infrastructure
+  * Difficult to optimise infrastructure (e.g. latency experienced)
   * Can be harder to monitor (and may cost money to perform monitoring checks)
+  * Giving up control (e.g. limited levels of configuration)
+  * Limited issue resolution (can only solve own bugs)
 
 # Useful links
 
@@ -28,6 +33,7 @@
 
 # Gotchas
 
+* **Lambda** supports a max storage of 75GB across all functions. Over time this can mount up, so ensure you're cleaning up old, unused versions (e.g. if using `Serverless` framework, using something like the `serverless-prune-plugin`)
 * Be aware of **cold start** times - first invocations are slower; subsequent are faster.
 * Dashboards & functions are **per-region**
 * Always **tag** your AWS resources so you can find/filter/group them
