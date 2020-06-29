@@ -207,94 +207,94 @@ resource "aws_route_table_association" "wp_private2_assoc" {
 # --- Security groups ---
 
 resource "aws_security_group" "wp_dev_sg" {
-  name = "wp_dev_sg"
+  name        = "wp_dev_sg"
   description = "Used to access the dev instance, only from my ip"
-  vpc_id = "${aws_vpc.wp_vpc.id}"
+  vpc_id      = "${aws_vpc.wp_vpc.id}"
 
   # ssh
   ingress {
-    from_port = 22
-    to_port = 22
-    protocol = "tcp"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
     cidr_blocks = ["${var.localip}"]
   }
 
   # http
   ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["${var.localip}"]
   }
 
   # allow everything out
   egress {
-    from_port = 0   # everything
-    to_port = 0     # everything
-    protocol = "-1" # -1 = everything
+    from_port   = 0             # everything
+    to_port     = 0             # everything
+    protocol    = "-1"          # -1 = everything
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 resource "aws_security_group" "wp_public_sg" {
-  name = "wp_public_sg"
+  name        = "wp_public_sg"
   description = "Used to access the ELB for public access from any ip"
-  vpc_id = "${aws_vpc.wp_vpc.id}"
+  vpc_id      = "${aws_vpc.wp_vpc.id}"
 
   # http
   ingress {
-    from_port = 80
-    to_port = 80
-    protocol = "tcp"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
 
   # allow everything out
   egress {
-    from_port = 0   # everything
-    to_port = 0     # everything
-    protocol = "-1" # -1 = everything
+    from_port   = 0             # everything
+    to_port     = 0             # everything
+    protocol    = "-1"          # -1 = everything
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 resource "aws_security_group" "wp_private_sg" {
-  name = "wp_private_sg"
+  name        = "wp_private_sg"
   description = "Used for private instances"
-  vpc_id = "${aws_vpc.wp_vpc.id}"
+  vpc_id      = "${aws_vpc.wp_vpc.id}"
 
   # allow anything internally
   ingress {
-    from_port = 0   # any
-    to_port = 0     # any
-    protocol = "-1" # any
+    from_port   = 0                   # any
+    to_port     = 0                   # any
+    protocol    = "-1"                # any
     cidr_blocks = ["${var.vpc_cidr}"]
   }
 
   # allow everything out
   egress {
-    from_port = 0   # any
-    to_port = 0     # any
-    protocol = "-1" # any
+    from_port   = 0             # any
+    to_port     = 0             # any
+    protocol    = "-1"          # any
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
 resource "aws_security_group" "wp_rds_sg" {
-  name = "wp_rds_sg"
+  name        = "wp_rds_sg"
   description = "Used for RDS instances"
-  vpc_id = "${aws_vpc.wp_vpc.id}"
+  vpc_id      = "${aws_vpc.wp_vpc.id}"
 
   # SQL from public/private security groups
   ingress {
     from_port = 3306
-    to_port = 3306
-    protocol = "tcp"
-    
+    to_port   = 3306
+    protocol  = "tcp"
+
     security_groups = [
       "${aws_security_group.wp_dev_sg.id}",
       "${aws_security_group.wp_public_sg.id}",
-      "${aws_security_group.wp_private_sg.id}"
+      "${aws_security_group.wp_private_sg.id}",
     ]
   }
 }
@@ -303,13 +303,14 @@ resource "aws_security_group" "wp_rds_sg" {
 
 resource "aws_vpc_endpoint" "wp_private-s3_endpoint" {
   vpc_id = "${aws_vpc.wp_vpc.id}"
+
   # access S3 from a specific region
   service_name = "com.amazonaws.${var.aws_region}.s3"
 
   # attach to route table so goes over the endpoint rather than over the internet
   route_table_ids = [
     "${aws_vpc.wp_vpc.main_route_table_id}",
-    "${aws_route_table.wp_public_rt.id}"
+    "${aws_route_table.wp_public_rt.id}",
   ]
 
   policy = <<POLICY
@@ -350,20 +351,21 @@ resource "aws_s3_bucket" "code" {
 # --- RDS ---
 
 resource "aws_db_instance" "wp_db" {
-  allocated_storage = 10   # GB
-  engine = "mysql"
-  engine_version = "5.6.27"
+  allocated_storage = 10       # GB
+  engine            = "mysql"
+  engine_version    = "5.6.27"
 
   # size of the server hosting the db
   instance_class = "${var.db_instance_class}"
 
-  name = "${var.dbname}"
+  name     = "${var.dbname}"
   username = "${var.dbuser}"
   password = "${var.dbpassword}"
 
   db_subnet_group_name = "${aws_db_subnet_group.wp_rds_subnetgroup.name}"
+
   vpc_security_group_ids = [
-    "${aws_security_group.wp_rds_sg.id}"
+    "${aws_security_group.wp_rds_sg.id}",
   ]
 
   # apparently without this, won't be able to destroy resources properly
@@ -373,22 +375,26 @@ resource "aws_db_instance" "wp_db" {
 # --- Dev server ---
 
 resource "aws_key_pair" "wp_auth" {
-  key_name = "${var.key_name}"
+  key_name   = "${var.key_name}"
   public_key = "${file(var.public_key_path)}"
 }
 
 resource "aws_instance" "wp_dev" {
   instance_type = "${var.dev_instance_type}"
-  ami = "${var.dev_ami}"
+  ami           = "${var.dev_ami}"
+
   tags {
     Name = "wp_dev"
   }
+
   key_name = "${aws_key_pair.wp_auth.id}"
+
   vpc_security_group_ids = [
-    "${aws_security_group.wp_dev_sg.id}"
+    "${aws_security_group.wp_dev_sg.id}",
   ]
+
   iam_instance_profile = "${aws_iam_instance_profile.s3_access_profile.id}"
-  subnet_id = "${aws_subnet.wp_public1_subnet.id}"
+  subnet_id            = "${aws_subnet.wp_public1_subnet.id}"
 
   # run a local command on your system (setup hosts file for use with ansible)
   provisioner "local-exec" {
@@ -422,27 +428,27 @@ resource "aws_elb" "wp_elb" {
   # can serve traffic from these
   subnets = [
     "${aws_subnet.wp_public1_subnet.id}",
-    "${aws_subnet.wp_public2_subnet.id}"
+    "${aws_subnet.wp_public2_subnet.id}",
   ]
 
   security_groups = [
     # http from anywhere
-    "${aws_security_group.wp_public_sg.id}"
+    "${aws_security_group.wp_public_sg.id}",
   ]
 
   listener {
-    instance_port = 80
+    instance_port     = 80
     instance_protocol = "http"
-    lb_port = 80
-    lb_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
   }
 
   health_check {
-    healthy_threshold = "${var.elb_healthy_threshold}"
+    healthy_threshold   = "${var.elb_healthy_threshold}"
     unhealthy_threshold = "${var.elb_unhealthy_threshold}"
-    timeout = "${var.elb_timeout}"
-    target = "TCP:80"
-    interval = "${var.elb_interval}"
+    timeout             = "${var.elb_timeout}"
+    target              = "TCP:80"
+    interval            = "${var.elb_interval}"
   }
 
   # distribute all requests equally between all of instances (useful in case 1 AZ becomes larger than the other)
@@ -451,14 +457,13 @@ resource "aws_elb" "wp_elb" {
   idle_timeout = 400
 
   # allow connections to finish before destorying
-  connection_draining = true
+  connection_draining         = true
   connection_draining_timeout = 400
 
   tags {
     Name = "wp_${var.domain_name}-elb"
   }
 }
-
 
 # ------ 'Golden AMI' - created from the dev server and then used as AMI for the auto-scaling group ------
 
@@ -467,7 +472,7 @@ resource "random_id" "golden_ami" {
 }
 
 resource "aws_ami_from_instance" "wp_golden" {
-  name = "wp_ami-${random_id.golden_ami.b64}" # base64
+  name               = "wp_ami-${random_id.golden_ami.b64}" # base64
   source_instance_id = "${aws_instance.wp_dev.id}"
 
   # create userdata file that will be run on each instance in the auto-scaling group
