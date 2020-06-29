@@ -2,6 +2,8 @@
 
 Sets up IAM roles, VPC resources, etc.
 
+![Infrastructure diagram](infrastructure.png)
+
 # Usage
 
 ## Prerequisites
