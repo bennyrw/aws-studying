@@ -12,3 +12,7 @@ cidrs = {
 }
 localip = "34.219.93.248/32"
 domain_name = "example-domain"
+db_instance_class = "db.t2.micro"
+dbname = "superherodb"
+dbuser = "superhero"
+dbpassword = "superheropass"

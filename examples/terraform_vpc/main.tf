@@ -169,7 +169,7 @@ resource "aws_subnet" "wp_rds3_subnet" {
 
 # group together the DB subnets
 resource "aws_db_subnet_group" "wp_rds_subnetgroup" {
-  name = "wp_rds_subnet_group"
+  name = "wp_rds_subnetgroup"
 
   subnet_ids = [
     "${aws_subnet.wp_rds1_subnet.id}",
@@ -345,4 +345,27 @@ resource "aws_s3_bucket" "code" {
   tags = {
     Name = "code bucket"
   }
+}
+
+# --- RDS ---
+
+resource "aws_db_instance" "wp_db" {
+  allocated_storage = 10   # GB
+  engine = "mysql"
+  engine_version = "5.6.27"
+
+  # size of the server hosting the db
+  instance_class = "${var.db_instance_class}"
+
+  name = "${var.dbname}"
+  username = "${var.dbuser}"
+  password = "${var.dbpassword}"
+
+  db_subnet_group_name = "${aws_db_subnet_group.wp_rds_subnetgroup.name}"
+  vpc_security_group_ids = [
+    "${aws_security_group.wp_rds_sg.id}"
+  ]
+
+  # apparently without this, won't be able to destroy resources properly
+  skip_final_snapshot = true
 }
