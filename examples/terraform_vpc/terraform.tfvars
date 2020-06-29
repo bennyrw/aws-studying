@@ -26,3 +26,11 @@ elb_healthy_threshold = "2"
 elb_unhealthy_threshold = "2"
 elb_timeout = "3"
 elb_interval = "30"
+
+lc_instance_type = "t2.micro"
+
+asg_max = "3"
+asg_min = "2"
+asg_capacity = "3"
+asg_grace = "300"
+asg_health_check_type = "EC2"
