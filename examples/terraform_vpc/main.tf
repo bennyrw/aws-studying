@@ -548,3 +548,64 @@ resource "aws_autoscaling_group" "wp_asg" {
     create_before_destroy = true
   }
 }
+
+# --- Route 53 ---
+
+# Primary (Public) Zone
+
+resource "aws_route53_zone" "primary" {
+  name = "${var.domain_name}.com"
+
+  # setup any domains you want but keep same nameservers
+  delegation_set_id = "${var.r53_delegation_set}"
+}
+
+# WWW
+resource "aws_route53_record" "www" {
+  zone_id = "${aws_route53_zone.primary.zone_id}"
+  name    = "www.${var.domain_name}.com"
+  type    = "A"
+
+  # point to ELB
+  alias {
+    name                   = "${aws_elb.wp_elb.dns_name}"
+    zone_id                = "${aws_elb.wp_elb.zone_id}"
+    evaluate_target_health = false
+  }
+}
+
+# DEV - allow access to the wp_dev instance
+resource "aws_route53_record" "dev" {
+  zone_id = "${aws_route53_zone.primary.zone_id}"
+  name    = "dev.${var.domain_name}.com"
+  type    = "A"
+
+  # you can also manually set a TTL
+  ttl = 300
+
+  records = [
+    "${aws_instance.wp_dev.public_ip}",
+  ]
+}
+
+# Private Zone
+
+resource "aws_route53_zone" "secondary" {
+  name = "${var.domain_name}.com"
+
+  vpc {
+    vpc_id = "${aws_vpc.wp_vpc.id}"
+  }
+}
+
+# DB
+resource "aws_route53_record" "db" {
+  zone_id = "${aws_route53_zone.secondary.zone_id}"
+  name    = "db.${var.domain_name}.com"
+  type    = "CNAME"
+  ttl     = "300"
+
+  records = [
+    "${aws_db_instance.wp_db.address}",
+  ]
+}

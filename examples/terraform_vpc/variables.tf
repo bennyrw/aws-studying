@@ -32,3 +32,5 @@ variable asg_min {}
 variable asg_capacity {}
 variable asg_grace {}
 variable asg_health_check_type {}
+
+variable r53_delegation_set {}

@@ -34,3 +34,20 @@ asg_min = "2"
 asg_capacity = "3"
 asg_grace = "300"
 asg_health_check_type = "EC2"
+
+# generate from `aws route53 create-reusable-delegation-set --caller-reference 1224 --profile superhero`
+# e.g. 
+# {
+#     "Location": "https://route53.amazonaws.com/2013-04-01/delegationset/N0869510YNG1O3B75D7A", 
+#     "DelegationSet": {
+#         "NameServers": [
+#             "ns-258.awsdns-32.com", 
+#             "ns-645.awsdns-16.net", 
+#             "ns-1865.awsdns-41.co.uk", 
+#             "ns-1515.awsdns-61.org"
+#         ], 
+#         "CallerReference": "1224", 
+#         "Id": "/delegationset/N0869510YNG1O3B75D7A"
+#     }
+# }
+r53_delegation_set = "N0869510YNG1O3B75D7A"
