@@ -1,6 +1,6 @@
 # AWS Serverless Application Model (SAM)
 
-**SAM** = **S**erverless **A**pplication **M**odel. It's an extension of **CloudFormation**.
+**SAM** = **S**erverless **A**pplication **M**odel. It's an extension of [**CloudFormation**](./CloudFormation.md).
 
 > _The command line tool allows developers to initialize and configure applications, debug locally using IDEs, and deploy to the AWS Cloud._
 

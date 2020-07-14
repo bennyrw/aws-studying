@@ -1,6 +1,7 @@
 # Service Notes
 
 * [API Gateway](API-Gateway.md)
+* [CloudFormation](CloudFormation.md)
 * [CloudWatch](CloudWatch.md)
 * [CLI](CLI.md)
 * [Cognito](Cognito.md)
