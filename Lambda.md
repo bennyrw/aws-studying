@@ -57,7 +57,7 @@
 
 # Defining a function
 
-* Source code - (deployment package - zip up deployment code along with dependencies, max 50mb each)
+* Source code - (deployment package - zip up deployment code along with dependencies, max 50mb each) - there are ways to re-use common code, see [layers](#layers) below.
 * Environment variables (note that these can be encryped using KMS)
 * **IAM**/execution role - grants function permissions it needs to interact without AWS services
 * Tags
@@ -97,6 +97,15 @@ Non-stream based (e.g. S3 bucket `PUT` events) => `Average Execution Time (s) * 
 If needed, you can **throttle** concurrency - setting `Max concurrent executions` to 0 to disable the function.
 
 Scaling happens automatically, but the maximum concurrent executions is *dependent on region*. Note that if networking (VPC) is enabled in the function definition then **EC2** limitations will apply and you may need to request increases.
+
+# Layers
+
+Layers:
+* Can add additional runtime support for programming languages - this support can be packaged into a layer for re-use or sharing with other accounts
+* Layers can be used to package dependencies and common code for reuse.
+* Are immutable once created (but new versions can be made).
+
+A Lambda function can have up to 5 layers and total size of all used layers must be <250mb. Layers are extracted into `/opt` of the execution environment.
 
 # Failure
 

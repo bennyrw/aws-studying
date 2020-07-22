@@ -1,0 +1,1 @@
+Consider using [**AWS Inspector**](https://aws.amazon.com/inspector/) to assess vulnerabilities of EC2 instances.
