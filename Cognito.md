@@ -1,6 +1,7 @@
 # Cognito - User management, sign-up and log-on
 
 * [Cognito resources](https://aws.amazon.com/cognito/dev-resources/)
+* [OAuth 2.0 grant flow](assets/cognito_oauth_grant_flow.png)
 
 Two main components:
 * **User pools** - user directory providing sign-up and sign-in for your app users
